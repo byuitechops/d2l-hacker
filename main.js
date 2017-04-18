@@ -6,7 +6,7 @@ var fs = require('fs')
 var list, doStuff, resultsFile, results = []
 
 module.exports = {
-	run: function (logInData,theirFunction) {
+	run: function (logInData, theirFunction) {
 		doStuff = theirFunction
 		getPromptData(logInData)
 	}
@@ -15,13 +15,13 @@ module.exports = {
 function generatePromptProps(logInData) {
 	var promptProps = []
 	// push them through
-	if (!logInData.username){
+	if (!logInData.username) {
 		promptProps.push({
 			name: 'username',
 			required: true
 		})
 	}
-	if (!logInData.password){
+	if (!logInData.password) {
 		promptProps.push({
 			name: 'password',
 			hidden: 'true',
@@ -29,7 +29,7 @@ function generatePromptProps(logInData) {
 			required: true
 		})
 	}
-	if (!logInData.csv){
+	if (!logInData.csv) {
 		promptProps.push({
 			name: 'csv',
 			required: true,
@@ -38,7 +38,7 @@ function generatePromptProps(logInData) {
 		})
 	}
 	// knock them out of our object
-	var copy = Object.assign({},logInData)
+	var copy = Object.assign({}, logInData)
 	delete copy.username
 	delete copy.password
 	// go through the rest of the list
@@ -53,35 +53,36 @@ function generatePromptProps(logInData) {
 function getPromptData(logInData, callback) {
 	prompt.start()
 	prompt.get(generatePromptProps(logInData), function (err, result) {
-		var promptData = Object.assign({},result)
+		var promptData = Object.assign({}, result)
 
 		// here are our defaults
 		var defaults = {
 			username: logInData.username,
 			password: logInData.password,
 			csv: logInData.csv,
-			domain:'byui',
+			domain: 'byui',
 			show: true,
 			openDevTools: false,
 			waitTimeout: 30000,
 		}
-		for(var key in defaults)
+		for (var key in defaults)
 			promptData[key] = promptData[key] || defaults[key]
 
 		resultsFile = result.resultsFile || logInData.resultsFile || './results.json'
 
 		list = readCSV(promptData.csv)
+		list.forEach(row => row.domain = promptData.domain)
 		logIn(promptData)
 	})
 }
 
-function readCSV(fileName){
+function readCSV(fileName) {
 	// make sure the file exists
 	var file
-	try{
-		file = fs.readFileSync(fileName,"UTF-8")
-	} catch(e){
-		throw("Reading the csv failed:\n"+e)
+	try {
+		file = fs.readFileSync(fileName, "UTF-8")
+	} catch (e) {
+		throw ("Reading the csv failed:\n" + e)
 	}
 	return d3.csvParse(file)
 }
@@ -100,31 +101,41 @@ function logIn(promptData) {
 		.click('#formId div a')
 		.wait(() => window.location.pathname == "/d2l/home")
 		.then(() => {
-			run(nightmare,0)
+			run(nightmare, 0)
 		})
 		.catch(console.error)
 }
 
-function run(nightmare,index){
+function run(nightmare, index) {
 	nightmare
 		.then(() => {
-			return doStuff(nightmare,list[index])
+			return doStuff(nightmare, list[index])
 		})
 		.then((result) => {
-			var message = "Row "+(index+2)+" Succeded: "+result
-			results.push({status:"Succeded",message:message,row:index+2,elements:list[index]})
+			var message = "Row " + (index + 2) + " Succeded: " + result
+			results.push({
+				status: "Succeded",
+				message: message,
+				row: index + 2,
+				elements: list[index]
+			})
 			console.error(message)
 		})
 		.catch((e) => {
-			var message = "Row "+(index+2)+" Failed: "+e
-			results.push({status:"Failed",message:message,row:index+2,elements:list[index]})
+			var message = "Row " + (index + 2) + " Failed: " + JSON.stringify(e)
+			results.push({
+				status: "Failed",
+				message: message,
+				row: index + 2,
+				elements: list[index]
+			})
 			console.error(message)
 		})
 		.then(() => {
-			if(index < list.length-1){
-				run(nightmare,index+1)
+			if (index < list.length - 1) {
+				run(nightmare, index + 1)
 			} else {
-				fs.writeFileSync(resultsFile,JSON.stringify(results))
+				fs.writeFileSync(resultsFile, JSON.stringify(results))
 				return nightmare.end()
 			}
 		})
