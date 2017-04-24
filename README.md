@@ -7,14 +7,14 @@ var hacker = require('d2l-hacker');
 
 hacker.run({},function(nightmare,data) {
 	return nightmare
-		.goto('https://byui.brightspace.com/d2l/lms/dropbox/admin/folders_manage.d2l?ou='+data.ou)
+		.goto('https://'+data.domain+'.brightspace.com/d2l/lms/dropbox/admin/folders_manage.d2l?ou='+data.ou)
 		.evaluate(() => {
 			return $('span.ds_i').text()
 		})
 })
 ```
 This will prompt for username, password, and csv from the user. 
-Then log into byui and call the passed function on every row of the csv, passing you the row data.
+Then log into byui and call the passed function on every row of the csv, passing you the row data and domain as a property.
 All you have to do is return the nightmare you want run every time.
 I will catch and save all the errors thrown, and values returned if any. Saving them all to a json file. 
 
