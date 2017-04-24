@@ -9,6 +9,12 @@ module.exports = {
 	run: function (logInData, theirFunction) {
 		doStuff = theirFunction
 		getPromptData(logInData)
+	},
+	evalEach: function (nightmare, array, theirFunction) {
+		nightmare = array.reduce((knight, elm) => knight.evaluate(thierFunction, elm), nightmare)
+	},
+	forEach: function (nightmare, array, theirFunction) {
+		nightmare = array.reduce((knight, elm) => theirFunction(nightmare, elm), nightmare)
 	}
 }
 
