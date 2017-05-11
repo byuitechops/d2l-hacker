@@ -3,10 +3,11 @@ var prompt = require('prompt')
 var d3 = require('d3-dsv')
 var fs = require('fs')
 
-var list, doStuff, resultsFile, results = []
+var list, doStuff, resultsFile, masterCallback, results = []
 
 module.exports = {
-	run: function (logInData, theirFunction) {
+	run: function (logInData, theirFunction, callback) {
+		masterCallback = callback
 		doStuff = theirFunction
 		getPromptData(logInData)
 	},
@@ -121,6 +122,7 @@ function run(nightmare, index) {
 			var message = "Row " + (index + 2) + " Succeded: " + result
 			results.push({
 				status: "Succeded",
+				result: result,
 				message: message,
 				row: index + 2,
 				elements: list[index]
@@ -131,6 +133,7 @@ function run(nightmare, index) {
 			var message = "Row " + (index + 2) + " Failed: " + JSON.stringify(e)
 			results.push({
 				status: "Failed",
+				result: JSON.stringify(e),
 				message: message,
 				row: index + 2,
 				elements: list[index]
@@ -142,6 +145,9 @@ function run(nightmare, index) {
 				run(nightmare, index + 1)
 			} else {
 				fs.writeFileSync(resultsFile, JSON.stringify(results))
+				if(masterCallback){
+					masterCallback(results)
+				}
 				return nightmare.end()
 			}
 		})
