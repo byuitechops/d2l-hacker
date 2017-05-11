@@ -71,6 +71,8 @@ function getPromptData(logInData, callback) {
 			show: true,
 			openDevTools: false,
 			waitTimeout: 30000,
+			executionTimeout: 30000,
+			gotoTimeout: 30000
 		}
 		for (var key in defaults)
 			promptData[key] = promptData[key] || defaults[key]
@@ -98,7 +100,9 @@ function logIn(promptData) {
 	var nightmare = Nightmare({
 		show: promptData.show,
 		openDevTools: promptData.openDevTools,
-		waitTimeout: promptData.waitTimeout
+		waitTimeout: promptData.waitTimeout,
+		executionTimeout: promptData.executionTimeout,
+		gotoTimeout: promptData.gotoTimeout
 	})
 	nightmare
 		.goto('https://' + promptData.domain + '.brightspace.com/d2l/login?noredirect=true')
